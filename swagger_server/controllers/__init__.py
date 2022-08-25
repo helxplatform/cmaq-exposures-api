@@ -6,7 +6,7 @@ from sqlalchemy.orm import sessionmaker
 
 parser = ConfigParser()
 parser.read('swagger_server/ini/connexion.ini')
-POSTGRES_ENGINE = 'postgres://' + parser.get('postgres', 'username') + ':' + parser.get('postgres', 'password') \
+POSTGRES_ENGINE = 'postgresql://' + parser.get('postgres', 'username') + ':' + parser.get('postgres', 'password') \
                   + '@' + parser.get('postgres', 'host') + ':' + parser.get('postgres', 'port') \
                   + '/' + parser.get('postgres', 'database')
 sys.path.append(parser.get('sys-path', 'exposures'))
