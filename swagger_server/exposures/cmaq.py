@@ -32,14 +32,18 @@ class MeasurementType(Enum):
 class CmaqExposures(object):
 
     def is_valid_date_range(self, **kwargs):
-        session = Session()
-        var_set = {'o3', 'pm25'} ################ TODO: CHANGE THIS TO GET FULL SET FROM DB #################
+
+        session = Session(future=True)
+
+        # TODO: Update next line to get full set from db
+        var_set = {'o3', 'pm25'}
         for var in var_set:
             min_date = session.query(ExposureList.utc_min_date).filter(
                 ExposureList.variable == var).one()
+
             max_date = session.query(ExposureList.utc_max_date).filter(
                 ExposureList.variable == var).one()
-            session.close()
+
             if min_date[0] > kwargs.get('end_date'):
                 return False
             elif max_date[0] < kwargs.get('start_date'):
@@ -47,6 +51,7 @@ class CmaqExposures(object):
             elif kwargs.get('start_date') > kwargs.get('end_date'):
                 return False
 
+        session.close()
         return True
 
     def is_valid_lat_lon(self, **kwargs):
@@ -102,7 +107,9 @@ class CmaqExposures(object):
         # retrieve query result for each lat,lon pair and add to data object
         lat = kwargs.get('latitude')
         lon = kwargs.get('longitude')
-        var_set = {'ozone_daily_8hour_maximum', 'pm25_daily_average'} ################ TODO: CHANGE THIS TO GET FULL SET FROM DB #################
+
+        # TODO: Update next line to get full set from db
+        var_set = {'ozone_daily_8hour_maximum', 'pm25_daily_average'}
 
         for var in var_set:
             # determine exposure type to query
@@ -127,8 +134,10 @@ class CmaqExposures(object):
                                   getattr(ExposureDatum, exposure)). \
                                   filter(ExposureDatum.date >= start_time + timedelta(hours=utc_offset)). \
                                   filter(ExposureDatum.date <= end_time + timedelta(hours=utc_offset)). \
-                                  filter(ExposureDatum.fips == geoid). \
-                                  filter(extract('hour', ExposureDatum.date) == utc_offset)
+                                  filter(ExposureDatum.fips == geoid)
+                                  # NOTE: Removing filter below as DATE sql type has no 'hour' nor does the data.
+                                  #filter(ExposureDatum.fips == geoid). \
+                                  #filter(extract('hour', ExposureDatum.date) == utc_offset)
 
             # add query output to data object in JSON structured format
             for query_return_values in query:
